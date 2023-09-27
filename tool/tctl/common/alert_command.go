@@ -54,6 +54,8 @@ type AlertCommand struct {
 
 	alertAck *kingpin.CmdClause
 
+	alertRm *kingpin.CmdClause
+
 	reason  string
 	alertID string
 	clear   bool
@@ -84,6 +86,9 @@ func (c *AlertCommand) Initialize(app *kingpin.Application, config *servicecfg.C
 	c.alertAck.Flag("reason", "The reason for acknowledging the cluster alert.").StringVar(&c.reason)
 	c.alertAck.Arg("id", "The cluster alert ID.").Required().StringVar(&c.alertID)
 
+	c.alertRm = alert.Command("rm", "Remove cluster alerts.")
+	c.alertRm.Arg("id", "The cluster alert ID.").Required().StringVar(&c.alertID)
+
 	// We add "ack ls" as a command so kingpin shows it in the help dialog - as there is a space, `tctl ack xyz` will always be
 	// handled by the ack command above
 	// This allows us to be consistent with our other `tctl xyz ls` commands
@@ -99,6 +104,8 @@ func (c *AlertCommand) TryRun(ctx context.Context, cmd string, client auth.Clien
 		err = c.Create(ctx, client)
 	case c.alertAck.FullCommand():
 		err = c.Ack(ctx, client)
+	case c.alertRm.FullCommand():
+		err = c.Delete(ctx, client)
 	default:
 		return false, nil
 	}
@@ -270,4 +277,16 @@ func (c *AlertCommand) Create(ctx context.Context, client auth.ClientI) error {
 	}
 
 	return trace.Wrap(client.UpsertClusterAlert(ctx, alert))
+}
+
+func (c *AlertCommand) Delete(ctx context.Context, client auth.ClientI) error {
+	req := proto.DeleteClusterAlertRequest{
+		AlertID: c.alertID,
+	}
+
+	if err := client.DeleteClusterAlert(ctx, req); err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
 }

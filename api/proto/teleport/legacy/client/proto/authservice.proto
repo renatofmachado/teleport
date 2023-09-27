@@ -2240,6 +2240,11 @@ message UpsertClusterAlertRequest {
   types.ClusterAlert Alert = 1 [(gogoproto.nullable) = false];
 }
 
+// DeleteClusterAlert specifies an alert to delete.
+message DeleteClusterAlertRequest {
+  string AlertID = 1 [(gogoproto.jsontag) = "alert_id"];
+}
+
 // GetConnectionDiagnosticRequest is a request to return a connection diagnostic.
 message GetConnectionDiagnosticRequest {
   // Name is the name of the connection diagnostic.
@@ -2366,6 +2371,9 @@ service AuthService {
 
   // UpsertClusterAlert creates a cluster alert.
   rpc UpsertClusterAlert(UpsertClusterAlertRequest) returns (google.protobuf.Empty);
+
+  // DeleteClusterAlert deletes a cluster alert.
+  rpc DeleteClusterAlert(DeleteClusterAlertRequest) returns (google.protobuf.Empty);
 
   // CreateAlertAck marks a cluster alert as acknowledged.
   rpc CreateAlertAck(types.AlertAcknowledgement) returns (google.protobuf.Empty);
